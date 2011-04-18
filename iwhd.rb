@@ -91,7 +91,7 @@ module IWHDInterface
       haml :index
     end
 
-    get '/iwhd/:collection/:id/children' do
+    get '/iwhd/:collection/:id/parents' do
       case params[:collection]
         when 'provider_images' then
             @parents = IWHDInterface::ProviderImage::parents_of(params[:id])
@@ -106,7 +106,7 @@ module IWHDInterface
       haml :parents
     end
 
-    get '/iwhd/:collection/:id/parents' do
+    get '/iwhd/:collection/:id/children' do
       case params[:collection]
         when 'images' then
             @parents = IWHDInterface::Image::children_of(params[:id])
@@ -136,7 +136,7 @@ __END__
 
 @@ index
 %collection{ :href => "/iwhd/provider_images", :rel => :provider_images}
-  %link{ :href => "/iwhd/provider_images/:id/children", :rel => :children, :method => :get}
+  %link{ :href => "/iwhd/provider_images/:id/parents", :rel => :parents, :method => :get}
 %collection{ :href => "/iwhd/images", :rel => :images}
   %link{ :href => "/iwhd/images/:id/children", :rel => :children, :method => :get}
   %link{ :href => "/iwhd/images/:id/parents", :rel => :parents, :method => :get}
@@ -148,14 +148,14 @@ __END__
   %link{ :href => "/iwhd/assemblies/:id/children", :rel => :children, :method => :get}
   %link{ :href => "/iwhd/assemblies/:id/parents", :rel => :parents, :method => :get}
 %collection{ :href => "/iwhd/deployables", :rel => :deployables}
-  %link{ :href => "/iwhd/deployables/:id/parents", :rel => :parents, :method => :get}
+  %link{ :href => "/iwhd/deployables/:id/children", :rel => :children, :method => :get}
 
-@@parents
+@@childrens
 - haml_tag "#{params[:collection]}".gsub(/s$/, ''), :href => "/iwhd/#{params[:collection]}/#{params[:id]}", :id => params[:id]  do
   - @parents.each do |uuid|
     %link{ :href => "/iwhd/#{@relation}/#{uuid}", :rel => "#{@relation.to_s.gsub(/s$/, '')}", :type => :child, :id => uuid}
 
-@@childrens
+@@parents
 - haml_tag "#{params[:collection]}".gsub(/s$/, ''), :href => "/iwhd/#{params[:collection]}/#{params[:id]}", :id => params[:id]  do
   - @parents.each do |uuid|
     %link{ :href => "/iwhd/#{@relation}/#{uuid}", :rel => "#{@relation.to_s.gsub(/s$/, '')}", :type => :parent, :id => uuid}
