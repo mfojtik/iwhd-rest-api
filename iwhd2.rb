@@ -52,8 +52,15 @@ module  IWHDReferenceHelper
     def initialize(bucket, uuid)
       @bucket, @uuid = bucket, uuid
       @xml = Nokogiri::XML(IWHDReferenceHelper::client["/%s/%s/_attrs" % [bucket, uuid]].get)
-      parse_attributes!
-      self.references = self.references.select { |attr| starts_with?(attr, 'referenced_by_') }.collect { |ref| ref.tr('referenced_by_', '')}
+      
+      # Get list of attributes first
+      self.attributes = (@xml/'object/object_attr').collect { |attr| attr[:name] }
+
+      # Then select all attributes which are references
+      self.references = self.attributes.select { |attr| starts_with?(attr, 'referenced_by_') }
+      
+      # Then strip out 'referenced_by_' string to produce just UUIDs
+      self.references.collect! { |ref| ref.tr('referenced_by_', '')}
       self
     end
 
@@ -65,12 +72,6 @@ module  IWHDReferenceHelper
     #
     def add_reference_to!(object, target)
       IWHDReferenceHelper::client["/%s/%s/referenced_by_%s" % [@bucket, @uuid, target]].put(:content => object)
-    end
-
-    protected
-
-    def parse_attributes!
-      self.references = (@xml/'object/object_attr').collect { |attr| attr[:name] }
     end
 
     private
